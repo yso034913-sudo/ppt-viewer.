@@ -162,9 +162,11 @@ const blobU=async(u,t)=>URL.createObjectURL(new Blob([await(await fetch(u)).arra
 const FFB='https://cdn.jsdelivr.net/npm/@ffmpeg/';let FFP=null,FQ=Promise.resolve(),FN=0,STG='';
 function ffLoad(){return FFP||(FFP=(async()=>{
   STG='1 تحميل المكتبة';await loadJs(FFB+'ffmpeg@0.12.10/dist/umd/ffmpeg.js');STG='2 تحميل ملفات المحوّل';
-  const ff=new FFmpegWASM.FFmpeg();
-  const cw=await blobU(FFB+'ffmpeg@0.12.10/dist/umd/814.ffmpeg.js','text/javascript'),cu=await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.js','text/javascript'),wu=await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.wasm','application/wasm');STG='3 تشغيل المحوّل';await ff.load({classWorkerURL:cw,coreURL:cu,wasmURL:wu});/*:await blobU(FFB+'ffmpeg@0.12.10/dist/umd/814.ffmpeg.js','text/javascript'),coreURL:await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.js','text/javascript'),*/
-  return ff})().catch(e=>{FFP=null;throw e}))}
+  const cw=await blobU(FFB+'ffmpeg@0.12.10/dist/umd/814.ffmpeg.js','text/javascript');let last;
+  for(const t of ['esm','umd']){try{
+    const cu=await blobU(FFB+'core@0.12.6/dist/'+t+'/ffmpeg-core.js','text/javascript'),wu=await blobU(FFB+'core@0.12.6/dist/'+t+'/ffmpeg-core.wasm','application/wasm');
+    STG='3 تشغيل المحوّل ('+t+')';const ff=new FFmpegWASM.FFmpeg();await ff.load({classWorkerURL:cw,coreURL:cu,wasmURL:wu});return ff}catch(e){last=e}}
+  throw last})().catch(e=>{FFP=null;throw e}))}
 function convWma(p){
   const k=p+'.wav';if(cache[k])return Promise.resolve(cache[k]);
   const job=FQ.then(async()=>{if(cache[k])return cache[k];const ff=await ffLoad(),i='i'+(++FN)+'.wma',o='o'+FN+'.wav';
