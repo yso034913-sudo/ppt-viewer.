@@ -1,0 +1,18 @@
+{
+  "name": "عروضي",
+  "short_name": "عروضي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1a110e",
+  "theme_color": "#7a2e1d",
+  "description": "مجلدات وعرض ملفات PowerPoint مع تشغيل الصوت والفيديو والانتقالات",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
