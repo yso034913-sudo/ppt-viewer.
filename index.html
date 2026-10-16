@@ -159,16 +159,16 @@ async function url(p){if(cache[p])return cache[p];const f=Z.file(p);if(!f)return
 /* WMA: المتصفح لا يشغّله، فنحوّله على الجهاز عند أول تشغيل بـ ffmpeg.wasm */
 const loadJs=u=>new Promise((r,j)=>{const e=document.createElement('script');e.src=u;e.onload=r;e.onerror=j;document.head.append(e)});
 const blobU=async(u,t)=>URL.createObjectURL(new Blob([await(await fetch(u)).arrayBuffer()],{type:t}));
-const FFB='https://cdn.jsdelivr.net/npm/@ffmpeg/';let FFP=null,FQ=Promise.resolve(),FN=0;
+const FFB='https://cdn.jsdelivr.net/npm/@ffmpeg/';let FFP=null,FQ=Promise.resolve(),FN=0,STG='';
 function ffLoad(){return FFP||(FFP=(async()=>{
-  await loadJs(FFB+'ffmpeg@0.12.10/dist/umd/ffmpeg.js');
+  STG='1 تحميل المكتبة';await loadJs(FFB+'ffmpeg@0.12.10/dist/umd/ffmpeg.js');STG='2 تحميل ملفات المحوّل';
   const ff=new FFmpegWASM.FFmpeg();
-  await ff.load({classWorkerURL:await blobU(FFB+'ffmpeg@0.12.10/dist/umd/814.ffmpeg.js','text/javascript'),coreURL:await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.js','text/javascript'),wasmURL:await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.wasm','application/wasm')});
+  const cw=await blobU(FFB+'ffmpeg@0.12.10/dist/umd/814.ffmpeg.js','text/javascript'),cu=await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.js','text/javascript'),wu=await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.wasm','application/wasm');STG='3 تشغيل المحوّل';await ff.load({classWorkerURL:cw,coreURL:cu,wasmURL:wu});/*:await blobU(FFB+'ffmpeg@0.12.10/dist/umd/814.ffmpeg.js','text/javascript'),coreURL:await blobU(FFB+'core@0.12.6/dist/umd/ffmpeg-core.js','text/javascript'),*/
   return ff})().catch(e=>{FFP=null;throw e}))}
 function convWma(p){
   const k=p+'.wav';if(cache[k])return Promise.resolve(cache[k]);
   const job=FQ.then(async()=>{if(cache[k])return cache[k];const ff=await ffLoad(),i='i'+(++FN)+'.wma',o='o'+FN+'.wav';
-    await ff.writeFile(i,await Z.file(p).async('uint8array'));
+    STG='4 تحويل الصوت';await ff.writeFile(i,await Z.file(p).async('uint8array'));
     if(await ff.exec(['-i',i,'-vn','-ac','1','-ar','22050','-f','wav',o]))throw new Error('ffmpeg failed');
     const b=await ff.readFile(o);await ff.deleteFile(i);await ff.deleteFile(o);
     return cache[k]=URL.createObjectURL(new Blob([b.buffer],{type:'audio/wav'}))});
@@ -301,7 +301,7 @@ async function one(n,k,ph,nvPr,cv,R,tf,host){
     if(med){
       const m=document.createElement(med.kind),inf=timing(C.tm,cv&&cv.getAttribute('id'));
       m.playsInline=true;m.loop=inf.loop;
-      if(/\.wma$/i.test(med.path)){m.preload='none';const op=m.play.bind(m);m.play=async()=>{if(!m.src){toast('جارٍ تجهيز صوت WMA… أول مرة تأخذ وقتاً');try{m.src=await convWma(med.path)}catch(e){console.error(e);toast('تعذّر تشغيل WMA — تأكد من الإنترنت وأعد المحاولة');throw e}}return op()}}
+      if(/\.wma$/i.test(med.path)){m.preload='none';const op=m.play.bind(m);m.play=async()=>{if(!m.src){toast('جارٍ تجهيز صوت WMA… أول مرة تأخذ وقتاً');try{m.src=await convWma(med.path)}catch(e){console.error(e);toast('فشل WMA عند الخطوة: '+STG+' — '+String(e&&e.message||e).slice(0,80));throw e}}return op()}}
       else{m.src=await url(med.path);m.preload='auto'}
       if(med.kind=='video'){m.controls=true;m.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000';if(src)m.poster=src;d.append(m)}
       else{const b=el('button','mi','▶');b.onclick=e=>{e.stopPropagation();m.paused?m.play().catch(()=>{}):m.pause()};m.onplay=()=>b.textContent='❚❚';m.onpause=()=>b.textContent='▶';d.append(b,m)}
